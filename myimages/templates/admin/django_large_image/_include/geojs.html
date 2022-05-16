@@ -1,0 +1,125 @@
+{% load static %}
+{% block geojs %}
+<script src="{% static 'django_large_image/js/geojs/1.8.3/geo.min.js' %}"></script>
+
+<div id="imageViewer" style="width: 100%; height: 100%; z-index: 10;"></div>
+
+{% include 'django_large_image/_include/colors.html' %}
+
+<script>
+  const containerRef = document.getElementById('imageViewer')
+  var imageLayer;
+  var viewer;
+
+  fetch(`${host}/${baseEndpoint}/${imageId}/metadata`)
+    .then(response => response.json())
+    .then(tileinfo => {
+      if (tileinfo['geospatial']) {
+        updateTileUrlOption('projection', 'EPSG:3857');
+
+        // Initialize the map
+        viewer = geo.map({
+          node: '#imageViewer',
+          clampBoundsX: true
+        })
+        var basemapLayer = viewer.createLayer('osm', {
+          source: 'osm',
+          gcs: 'EPSG:3857' // web mercator
+        });
+
+        function setBounds(extent, setMax = false) {
+          if (extent != undefined && extent.xmin != undefined) {
+            let xc = (extent.xmax - extent.xmin) * 0.2
+            let yc = (extent.ymax - extent.ymin) * 0.2
+            if (xc === 0) {
+              xc = 0.01
+            }
+            if (yc === 0) {
+              yc = 0.01
+            }
+            var bounds = {
+              left: Math.max(extent.xmin - xc, -180.0),
+              right: Math.min(extent.xmax + xc, 180.0),
+              top: Math.min(extent.ymax + yc, 89.9999),
+              bottom: Math.max(extent.ymin - yc, -89.9999)
+            }
+            viewer.bounds(bounds);
+            if (setMax) {
+              viewer.maxBounds(bounds)
+            } else {
+              viewer.zoom(viewer.zoom() - 0.25);
+            }
+          }
+        }
+        setBounds(tileinfo.bounds);
+
+        // Tile layer for showing rasters/images with large_image
+        imageLayer = viewer.createLayer('osm', {
+          keepLower: false,
+          attribution: '',
+          autoshareRenderer: false,
+        });
+
+        const dataset_bb = tileinfo.bounds;
+        imageLayer.isValid = (index) => {
+          const tileBounds = imageLayer.gcsTileBounds(index);
+          return tileBounds.left <= dataset_bb.xmax &&
+            tileBounds.right >= dataset_bb.xmin &&
+            tileBounds.top >= dataset_bb.ymin &&
+            tileBounds.bottom <= dataset_bb.ymax;
+        }
+        imageLayer.idleAfter = 'all';
+
+        // Increase zoom range from default of 16
+        viewer.zoomRange({
+          min: 0,
+          max: 20,
+        })
+      } else {
+        const params = geo.util.pixelCoordinateParams(
+          '#imageViewer', tileinfo.sizeX, tileinfo.sizeY, tileinfo.tileWidth, tileinfo.tileHeight);
+        params.layer.url = tileUrl;
+
+        viewer = geo.map(params.map);
+
+        viewer.zoomRange({
+          // do not set a min limit so that bounds clamping determines min
+          min: -Infinity,
+          max: 12,
+        });
+
+        imageLayer = viewer.createLayer('osm', params.layer);
+      }
+      // Change default interactor options
+      const interactorOpts = viewer.interactor().options();
+      interactorOpts.zoomAnimation = {
+        enabled: false,
+      };
+      interactorOpts.momentum = {
+        enabled: true,
+      };
+      viewer.interactor().options(interactorOpts);
+
+
+      var ui = viewer.createLayer('ui');
+      // Create a zoom slider widget
+      ui.createWidget('slider', {
+        position: {
+          left: 40,
+          top: 40
+        }
+      });
+      bandChange();
+    });
+
+
+  function updateTileLayer() {
+    imageLayer.url(tileUrl);
+  }
+
+  function updateTilesOpacity(e, value) {
+    value = Number(value) / 100.0;
+    imageLayer.opacity(value);
+  }
+</script>
+{% endblock geojs %}

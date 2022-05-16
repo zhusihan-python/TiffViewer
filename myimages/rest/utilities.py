@@ -134,8 +134,9 @@ def field_file_to_local_path(field_file: FieldFile) -> pathlib.Path:
                     # When file_obj is an actual File, (typically backed by FileSystemStorage),
                     # it is already at a stable path on disk.
                     # We must symlink it into the desired path
-                    os.symlink(file_obj.name, dest_path)
-                    logger.debug('Performing symlink')
+                    if not os.path.exists(dest_path):
+                        os.symlink(file_obj.name, dest_path)
+                        logger.debug('Performing symlink')
                 else:
                     # When file_obj is actually a subclass of File, it only provides a Python
                     # file-like object API. So, it must be copied to a stable path.

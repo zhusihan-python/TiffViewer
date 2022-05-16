@@ -3,20 +3,19 @@ import logging
 import large_image
 from rest_framework.request import Request
 from rest_framework.response import Response
-# from rest_framework.views import APIView
-from django.views import View
+from rest_framework.views import APIView
 
 logger = logging.getLogger(__name__)
 
 
-class ListTileSourcesView(View):
+class ListTileSourcesView(APIView):
     def get(self, request: Request) -> Response:
         large_image.tilesource.loadTileSources()
         sources = large_image.tilesource.AvailableTileSources
         return Response({k: str(v) for k, v in sources.items()})
 
 
-class ListColormapsView(View):
+class ListColormapsView(APIView):
     def get(self, request: Request) -> Response:
         """List of available palettes.
 

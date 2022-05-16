@@ -17,53 +17,53 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView
-# from drf_yasg import openapi
-# from drf_yasg.views import get_schema_view
-# from rest_framework import permissions
-# from rest_framework.routers import SimpleRouter
-from myimages.rest.standalone import ListTileSourcesView, ListColormapsView
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
+from rest_framework.routers import SimpleRouter
 
 from myimages.imagefiles.viewsets import ImageFileDetailViewSet
+from myimages import rest
 
-# router = SimpleRouter(trailing_slash=False)
-# router.register(r'api/imagefile', ImageFileDetailViewSet)
+router = SimpleRouter(trailing_slash=False)
+router.register(r'api/imagefile', ImageFileDetailViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path(r'api/imagefile', ImageFileDetailViewSet.as_view()),
-    path(
-      'api/large-image/sources',
-      ListTileSourcesView.as_view(),
-      name='large-image-sources',
-    ),
-    path(
-      'api/large-image/colormaps',
-      ListColormapsView.as_view(),
-      name='large-image-colormaps',
-    ),
+    # path('', include('imagefiles.urls')),
     path(r'', RedirectView.as_view(url='admin/', permanent=False), name='index'),
-]
+    path(
+            'api/large-image/sources',
+            rest.ListTileSourcesView.as_view(),
+            name='large-image-sources',
+        ),
+        path(
+            'api/large-image/colormaps',
+            rest.ListColormapsView.as_view(),
+            name='large-image-colormaps',
+        ),
+] + router.urls
 
-# schema_view = get_schema_view(
-#     openapi.Info(
-#         title='Resonant GeoData API',
-#         default_version='v1',
-#         description='Resonant GeoData',
-#         # terms_of_service='https://www.google.com/policies/terms/',
-#         contact=openapi.Contact(email='kitware@kitare.com'),
-#         license=openapi.License(name='Apache 2.0'),
-#     ),
-#     public=True,
-#     permission_classes=(permissions.AllowAny,),
-#     patterns=urlpatterns,
-# )
-#
-# urlpatterns += [
-#     re_path(
-#         r'^swagger(?P<format>\.json|\.yaml)$',
-#         schema_view.without_ui(cache_timeout=0),
-#         name='schema-json',
-#     ),
-#     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-#     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-# ]
+schema_view = get_schema_view(
+    openapi.Info(
+        title='Resonant GeoData API',
+        default_version='v1',
+        description='Resonant GeoData',
+        # terms_of_service='https://www.google.com/policies/terms/',
+        contact=openapi.Contact(email='kitware@kitare.com'),
+        license=openapi.License(name='Apache 2.0'),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+    patterns=urlpatterns,
+)
+
+urlpatterns += [
+    re_path(
+        r'^swagger(?P<format>\.json|\.yaml)$',
+        schema_view.without_ui(cache_timeout=0),
+        name='schema-json',
+    ),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+]

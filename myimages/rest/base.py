@@ -4,9 +4,8 @@ from typing import Any, Optional, Union
 
 from large_image.exceptions import TileSourceError
 from large_image.tilesource import FileTileSource
-# from rest_framework.exceptions import Exception, ValidationError
-# from rest_framework.request import Request
-from django.http import HttpRequest as Request
+from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.request import Request
 
 from myimages.rest import tilesource
 from myimages.rest import utilities
@@ -39,7 +38,7 @@ class LargeImageMixinBase:
             try:
                 style = json.loads(self.get_query_param(request, 'style'))
             except json.JSONDecodeError as e:
-                raise Exception(
+                raise ValidationError(
                     f'`style` query parameter is malformed and likely not properly URL encoded: {e}'
                 )
         # else, fallback to supported query parameters for viewing a sinlge band
@@ -114,4 +113,4 @@ class LargeImageMixinBase:
             )
         except TileSourceError as e:
             # Raise 500 server error if tile source failed to open
-            raise Exception(str(e))
+            raise APIException(str(e))

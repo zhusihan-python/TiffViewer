@@ -1,0 +1,66 @@
+{% load static %}
+{% block cesium %}
+<!-- Include the CesiumJS JavaScript and CSS files -->
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.87.1/Build/Cesium/Cesium.js"></script>
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.87.1/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+
+<!-- Include our custom styles for the Cesium Viewer -->
+<link rel="stylesheet" type="text/css" href="{% static 'django_large_image/styles/cesium.css' %}">
+
+<!-- Make the vwidget div -->
+<div id="cesiumContainer"></div>
+
+<script>
+  // Set the Cesium Ion token to `null` to avoid warnings
+  const userCesiumToken = "{{ cesium_token }}";
+  if (userCesiumToken) {
+    Cesium.Ion.defaultAccessToken = "{{ cesium_token }}";
+  }
+</script>
+
+<!-- Load the script to initialize the viewer -->
+<script src="{% static 'django_large_image/js/cesium.js' %}"></script>
+
+{% include 'django_large_image/_include/colors.html' %}
+
+<script>
+  var tileProvider;
+  var tileLayer;
+  var layers = viewer.scene.imageryLayers;
+  var rectangle;
+
+  function updateTileLayer() {
+    layers.remove(tileLayer)
+
+    tileProvider = new Cesium.UrlTemplateImageryProvider({
+      url: tileUrl,
+      subdomains: null,
+      rectangle: rectangle,
+    });
+    tileLayer = layers.addImageryProvider(tileProvider);
+  }
+
+  fetch(`${host}/${baseEndpoint}/${imageId}/metadata?projection=EPSG:3857`)
+    .then(response => response.json())
+    .then(data => {
+      var extents = data["bounds"];
+      rectangle = Cesium.Rectangle.fromDegrees(extents.xmin, extents.ymin, extents.xmax, extents.ymax)
+
+      bandChange(); // initial call to add tile layer
+
+      viewer.camera.flyTo({
+        destination: rectangle,
+      });
+    });
+
+
+  function updateTilesOpacity(e, value) {
+    value = Number(value) / 100.0;
+    tileLayer.alpha = value;
+  }
+
+  Cesium.Camera.DEFAULT_VIEW_RECTANGLE = rectangle;
+  Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
+</script>
+
+{% endblock cesium %}

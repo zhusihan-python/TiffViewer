@@ -1,0 +1,34 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<style>
+  html,
+  body {
+    min-height: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  #content {
+    min-height: 100%;
+  }
+
+  .offcanvas-header {
+    display: none;
+  }
+
+  p {
+    margin: 0;
+    padding: 0 0 1em 0;
+  }
+</style>
+
+<body>
+  {% include 'django_large_image/_include/base.html' %}
+
+  {% block content %}{% endblock %}
+
+</body>
+
+</html>

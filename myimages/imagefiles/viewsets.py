@@ -1,14 +1,13 @@
-# from rest_framework import mixins, viewsets
-from django.views import View
+from rest_framework import mixins, viewsets
+
 from myimages.rest import LargeImageFileDetailMixin
 from myimages.imagefiles import models
 
 
 class ImageFileDetailViewSet(
-    # mixins.ListModelMixin,
-    # viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
     LargeImageFileDetailMixin,
-    View
 ):
     queryset = models.ImageFile.objects.all()
     serializer_class = models.ImageFileSerializer

@@ -3,7 +3,7 @@ import pathlib
 from typing import Union
 
 from django.db.models.fields.files import FieldFile
-# from rest_framework.exceptions import Exception
+from rest_framework.exceptions import APIException
 from rest_framework.request import Request
 
 from myimages.rest import utilities
@@ -65,7 +65,7 @@ class LargeImageFileDetailMixin(LargeImageDetailMixin):
             return getattr(self.get_object(), self.FILE_FIELD_NAME)  # type: ignore
         except (AttributeError, TypeError):
             # Raise 500 server error
-            raise Exception('`FILE_FIELD_NAME` not properly set on viewset class.')
+            raise APIException('`FILE_FIELD_NAME` not properly set on viewset class.')
 
     @wraps(LargeImageDetailMixin.get_path)
     def get_path(self, request: Request, pk: int = None) -> Union[str, pathlib.Path]:
