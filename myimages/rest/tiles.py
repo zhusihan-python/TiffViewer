@@ -38,10 +38,12 @@ class TilesMixin(LargeImageMixinBase):
     def tile(
         self, request: Request, x: int, y: int, z: int, pk: int = None, format: str = None
     ) -> HttpResponse:
+        print("into tile")
         encoding = tilesource.format_to_encoding(format)
         source = self.get_tile_source(request, pk, encoding=encoding)
         try:
             tile_binary = source.getTile(int(x), int(y), int(z), encoding=encoding)
+            print("tile encoding", encoding, type(tile_binary))
         except TileSourceXYZRangeError as e:
             raise ValidationError(e)
         mime_type = source.getTileMimeType()

@@ -14,6 +14,7 @@
   fetch(`${host}/${baseEndpoint}/${imageId}/metadata`)
     .then(response => response.json())
     .then(tileinfo => {
+      console.log("tileinfo['geospatial'] in metadata", tileinfo['geospatial']);
       if (tileinfo['geospatial']) {
         updateTileUrlOption('projection', 'EPSG:3857');
 
@@ -51,6 +52,7 @@
             }
           }
         }
+        console.log("tileinfo in django_large_image geojs", tileinfo);
         setBounds(tileinfo.bounds);
 
         // Tile layer for showing rasters/images with large_image
@@ -78,6 +80,9 @@
       } else {
         const params = geo.util.pixelCoordinateParams(
           '#imageViewer', tileinfo.sizeX, tileinfo.sizeY, tileinfo.tileWidth, tileinfo.tileHeight);
+        console.log("params in django_large_image geojs", params);
+        console.log("tileUrl in django_large_image geojs", tileUrl);
+
         params.layer.url = tileUrl;
 
         viewer = geo.map(params.map);
@@ -87,8 +92,9 @@
           min: -Infinity,
           max: 12,
         });
-
+        console.log("params.layer in metadata else", params.layer);
         imageLayer = viewer.createLayer('osm', params.layer);
+        console.log("imageLayer in metadata else", imageLayer);
       }
       // Change default interactor options
       const interactorOpts = viewer.interactor().options();
@@ -112,9 +118,28 @@
       bandChange();
     });
 
+  function _callback(x, y, z) {
+      return "http://127.0.0.1:9000/api/imagefile/1/tiles/"+z+"/" + x + "/" + y + ".png";
+  }
+
+  function get_url(x, y, z, cb){
+      let url = cb(x, y, z);
+      console.log("url in django_large_image geojs", url);
+      return url;
+  }
+
 
   function updateTileLayer() {
+    console.log('tileUrl in django_large_image geojs updateTileLayer', tileUrl);
+    tileUrl = function (x, y, z, subdomains) {
+      console.log("input x,y,z,subdomains in django_large_image geojs updateTileLayer", x, y, z, subdomains);
+
+      let res = get_url(x, y, z, _callback);
+      console.log("res in django_large_image geojs updateTileLayer", res);
+      return res;
+    };
     imageLayer.url(tileUrl);
+    {#console.log("imageLayer in django_large_image geojs updateTileLayer", imageLayer);#}
   }
 
   function updateTilesOpacity(e, value) {

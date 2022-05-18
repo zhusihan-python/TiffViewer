@@ -25,11 +25,13 @@ histogram_parameters = params.BASE + params.HISTOGRAM
 class DataMixin(LargeImageMixinBase):
     @method_decorator(cache_page(CACHE_TIMEOUT))
     def thumbnail(self, request: Request, pk: int = None, format: str = None) -> HttpResponse:
+        print("into DataMixin thumbnail")
         encoding = tilesource.format_to_encoding(format)
         width = int(self.get_query_param(request, 'max_width', 256))
         height = int(self.get_query_param(request, 'max_height', 256))
         source = self.get_tile_source(request, pk, encoding=encoding)
         thumb_data, mime_type = source.getThumbnail(encoding=encoding, width=width, height=height)
+        print("DataMixin thumbnail encoding:", encoding, width, height, type(thumb_data))
         return HttpResponse(thumb_data, content_type=mime_type)
 
     @swagger_auto_schema(
