@@ -1,6 +1,7 @@
 {% load static %}
 {% block geojs %}
-<script src="{% static 'imagefiles/js/geojs/1.8.3/geo.min.js' %}"></script>
+{#<script src="{% static 'imagefiles/js/geojs/1.8.3/geo.min.js' %}"></script>#}
+<script src="{% static 'imagefiles/js/geojs/1.8.3/geo.js' %}"></script>
 
 <div id="imageViewer" style="width: 100%; height: 100%; z-index: 10;"></div>
 
@@ -80,8 +81,11 @@
       } else {
         const params = geo.util.pixelCoordinateParams(
           '#imageViewer', tileinfo.sizeX, tileinfo.sizeY, tileinfo.tileWidth, tileinfo.tileHeight);
-        console.log("params in django_large_image geojs", params);
-        console.log("tileUrl in django_large_image geojs", tileUrl);
+        console.log("params in django_large_image geojs else", params);
+        console.log("tileinfo in django_large_image geojs else", tileinfo);
+
+        var params_str = JSON.stringify(params);
+        console.log("params_str in django_large_image geojs else", params_str);
 
         params.layer.url = tileUrl;
 
@@ -92,7 +96,9 @@
           min: -Infinity,
           max: 12,
         });
-        console.log("params.layer in metadata else", params.layer);
+
+        var layer_str = JSON.stringify(params.layer);
+        console.log("params.layer in metadata else", layer_str);
         imageLayer = viewer.createLayer('osm', params.layer);
         console.log("imageLayer in metadata else", imageLayer);
       }
